@@ -750,14 +750,14 @@ let arrayProvinsi = Object.values(record.designations).filter(p => p !== 'Tidak 
   
   // Jika setelah disaring ternyata kosong, kembalikan teksnya agar tidak blank
   if (arrayProvinsi.length === 0) {
-    arrayProvinsi.push('Tanpa Lokasi Spesifik');
+    arrayProvinsi.push('Tidak dalam Provinsi');
   }
   
   let teksDaftarProvinsi = arrayProvinsi.join(', '); 
 
   // 2. Siapkan Info Lokasi
 let spesifik = record.lokasiSpesifik; 
-  if (spesifik === 'Tanpa Lokasi Spesifik') {
+  if (spesifik === 'Tidak dalam Provinsi') {
     spesifik = null;
   }
 
