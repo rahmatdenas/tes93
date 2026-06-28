@@ -68,24 +68,32 @@ function loadPrimaryData() {
           processHashChange();
         });
     })
+    // ==========================================
+    // PERBAIKAN DI BLOK CATCH INI
+    // ==========================================
     .catch(error => {
        if (error === 'ABORTED') {
          console.log("Pencarian dibatalkan secara paksa. Kembali ke Beranda.");
          return;
        }
 
+       // 1. Matikan status memuat agar animasi berhenti
+       isFetching = false;
+       PrimaryDataIsLoaded = false;
+
+       // 2. Tampilkan pesan error di panel daftar (menggantikan alert bawaan browser)
+       let indexList = document.getElementById('index-list');
+       if (indexList) {
+         indexList.innerHTML = `
+           <div style="padding: 40px 20px; text-align: center; line-height: 1.6;">
+             <h3 style="margin-bottom: 10px; margin-top:0; color: #cc0000;">Koneksi Terputus</h3>
+             <p style="color: #666; font-size:14px; margin-bottom: 25px;">Gagal mengambil data dari server Wikidata. Pastikan koneksi internet Anda stabil atau coba lagi nanti saat server tidak sibuk.</p>
+             <a href="#landing" style="background-color: #882222; color: #fff; font-size:11px; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: 800; display: inline-block;">Kembali ke Beranda</a>
+           </div>
+         `;
+       }
+       
        console.error("Data utama gagal dimuat. Cek koneksi atau server Wikidata.", error);
-       alert("Maaf, server database sedang sibuk. Coba lagi nanti.");
-       
-       if (typeof resetApp === 'function') resetApp();
-       
-       window.location.hash = ''; 
-       setTimeout(function() {
-         window.location.hash = 'landing';
-         if (typeof window.setMobilePanelExpanded === 'function') {
-           window.setMobilePanelExpanded(true);
-         }
-       }, 50);
     });
 }
 
