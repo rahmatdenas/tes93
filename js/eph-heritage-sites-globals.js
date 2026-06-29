@@ -136,7 +136,7 @@ function getSparqlQuery6(qid) {
     OPTIONAL { ?site wdt:P2044 ?ketinggianVal . }
     OPTIONAL {
       ?site p:P2046 ?luasStmt .
-      ?luasStmt psn:P2046 ?luasNode .
+      ?luasStmt psv:P2046 ?luasNode .
       ?luasNode wikibase:quantityAmount ?luasVal .
       OPTIONAL { 
         ?luasNode wikibase:quantityUnit ?luasUnitItem . 
