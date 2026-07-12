@@ -689,7 +689,7 @@ optgroup option { padding-left: 10px; }
 }
 
 .leaflet-popup-content {
-  font: 600 18px/20px "Open Sans", sans-serif;
+  font: 600 18px/22px "Open Sans", sans-serif;
   color: #fff;
   text-align: center;
 }
