@@ -48,7 +48,7 @@ function loadPrimaryData() {
   let tiketPencarianIni = currentSearchToken;
   doPreProcessing();
 
-populateProvinceTypesData() 
+  populateProvinceTypesData() 
     .then(() => {
       // Gerbang 1: Cek sebelum memproses koordinat
       if (currentSearchToken !== tiketPencarianIni) throw 'ABORTED';
@@ -60,47 +60,64 @@ populateProvinceTypesData()
       });
     })
     .then(() => {
+      // Gerbang 3: Cek sebelum membuang layar loading
       if (currentSearchToken !== tiketPencarianIni) throw 'ABORTED';
       
-      enableApp(); 
-      populateImageAndWikipediaData()
-.then(() => {
-      if (currentSearchToken !== tiketPencarianIni) throw 'ABORTED';
-      
-      // 1. Matikan layar loading (isFetching = false)
+      // 1. Matikan layar loading secara resmi (isFetching = false)
       enableApp(); 
       
       // =========================================================
-      // +++ KUNCI PERBAIKAN: PAKSA RENDER SEKARANG JUGA +++
+      // +++ PAKSA RENDER SEKARANG (UI BEBAS DARI SANDERA) +++
       // =========================================================
-      // Langsung render peta dan daftar SEBELUM antrean gambar/artikel dimulai.
-      // Ini menjamin UI tidak akan tersandera oleh koneksi server yang lambat.
       applyIntersectionFilter(); 
       processHashChange();
       
-      // 2. Tarik gambar dan artikel sebagai "tugas sampingan"
+      // =========================================================
+      // +++ KUNCI SEMENTARA TOMBOL FILTER MENGGUNAKAN CLASS +++
+      // =========================================================
+      let btnImg = document.getElementById('btn-image') || document.querySelector('[data-filter="image"]');
+      let btnArt = document.getElementById('btn-article') || document.querySelector('[data-filter="article"]');
+      
+      if (btnImg) {
+        btnImg.classList.add('disabled'); 
+        btnImg.textContent = 'Mencari Gambar...'; 
+      }
+      if (btnArt) {
+        btnArt.classList.add('disabled');
+        btnArt.textContent = 'Mencari Artikel...';
+      }
+
+      // 2. Tarik gambar dan artikel secara diam-diam di latar belakang
       populateImageAndWikipediaData()
         .then(() => {
-          // Gerbang 3: Cek sebelum memproses gambar/artikel di background
           if (currentSearchToken !== tiketPencarianIni) return; 
           
-          // Render ulang senyap HANYA untuk memperbarui angka di tombol filter Gambar/Artikel
+          // =========================================================
+          // +++ BUKA KUNCI TOMBOL (SKENARIO SUKSES 100%) +++
+          // =========================================================
+          if (btnImg) btnImg.classList.remove('disabled');
+          if (btnArt) btnArt.classList.remove('disabled');
+
+          // Render ulang senyap HANYA untuk memperbarui angka di tombol
           applyIntersectionFilter(); 
           Object.values(Records).forEach(r => r.panelElem = undefined);         
         })
         .catch(error => {
           if (error === 'ABORTED' || currentSearchToken !== tiketPencarianIni) return;
-          console.warn("Gagal mengambil sebagian data Gambar/Wikipedia, server mungkin kelebihan beban.", error);
-          // Walaupun gambar gagal karena data ribuan, aplikasi dan peta tetap berjalan mulus!
+          console.warn("Gagal menarik sebagian data Gambar/Wikipedia, server mungkin kelebihan beban.", error);
+          
+          // =========================================================
+          // +++ BUKA KUNCI TOMBOL (SKENARIO SUKSES SEBAGIAN/GAGAL) +++
+          // =========================================================
+          if (btnImg) btnImg.classList.remove('disabled');
+          if (btnArt) btnArt.classList.remove('disabled');
+
+          // Segarkan UI agar sisa foto yang berhasil didapat tetap bisa difilter
+          applyIntersectionFilter(); 
+          Object.values(Records).forEach(r => r.panelElem = undefined);
         });
     })
-        .catch(error => {
-          if (error === 'ABORTED' || currentSearchToken !== tiketPencarianIni) return;
-          console.warn("Gagal mengambil data Gambar/Wikipedia dari server.", error);
-          // ... (sisa kode catch Anda) ...
-        });
-    })
-.catch(error => {
+    .catch(error => {
        // KUNCI: Karena kita melempar (throw) 'ABORTED' dari gerbang di atas, 
        // error tersebut akan ditangkap di sini dan diabaikan dengan aman tanpa merusak UI.
        if (error === 'ABORTED') {
@@ -124,14 +141,14 @@ populateProvinceTypesData()
          `;
        }
   
-loadingTimeoutToken = setTimeout(() => {
-  // Ganti targetnya ke elemen yang memang Anda gunakan untuk status loading
-  let loadingDesc = document.querySelector('#index-list p'); 
-  
-  if (loadingDesc && isFetching) {
-   loadingDesc.innerHTML = `Data yang ditarik terlalu banyak. Harap menunggu, 3-5 menit...`;
-  }
-}, 5000);
+       loadingTimeoutToken = setTimeout(() => {
+         // Ganti targetnya ke elemen yang memang Anda gunakan untuk status loading
+         let loadingDesc = document.querySelector('#index-list p'); 
+         
+         if (loadingDesc && isFetching) {
+           loadingDesc.innerHTML = `Data yang ditarik terlalu banyak. Harap menunggu, 3-5 menit...`;
+         }
+       }, 5000);
        
        console.error("Data utama gagal dimuat. Cek koneksi atau server Wikidata.", error);
     }); 
