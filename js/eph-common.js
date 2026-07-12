@@ -214,6 +214,7 @@ function resetApp() {
 // E. Kembalikan teks asli pada tombol dan KUNCI tombolnya
   let btnImg = document.getElementById('btn-image') || document.querySelector('[data-filter="image"]');
   let btnArt = document.getElementById('btn-article') || document.querySelector('[data-filter="article"]');
+  let btnAll = document.getElementById('btn-all'); // Tangkap tombol bosnya
   
   if (btnImg) { 
     btnImg.textContent = 'Memiliki Gambar';
@@ -222,6 +223,10 @@ function resetApp() {
   if (btnArt) { 
     btnArt.textContent = 'Memiliki Artikel';
     btnArt.classList.add('disabled'); // Suntikkan efek terkunci saat di beranda
+  }
+  if (btnAll) {
+    btnAll.classList.add('disabled');   // Kunci kembali saat mendarat di Beranda
+    btnAll.classList.remove('active');  // Matikan nyala lampunya
   }
 
   // F. Reset memori variabel filter di JS 3 agar tidak menyisakan status
