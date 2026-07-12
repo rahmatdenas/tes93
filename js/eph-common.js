@@ -364,7 +364,18 @@ function fetchWdqsRaw(query) {
 async function fetchWdqsRawWithRetry(query, maxRetry = 3) {
   for (let attempt = 1; attempt <= maxRetry; attempt++) {
     try {
+      // =========================================================
+      // +++ PERBAIKAN UX: LAPORKAN SEBELUM MENCOBA ULANG +++
+      // =========================================================
+      if (attempt > 1) {
+        let progressText = document.querySelector('#index-list p');
+        if (progressText) {
+          progressText.innerHTML = `Sedang melakukan percobaan ulang (${attempt}/${maxRetry})...`;
+        }
+      }
+
       return await fetchWdqsRaw(query);
+
     } catch (error) {
       if (error === 'ABORTED') throw error; 
       
@@ -373,10 +384,12 @@ async function fetchWdqsRawWithRetry(query, maxRetry = 3) {
       // Mengubah teks loading menjadi pesan error sementara
       let progressText = document.querySelector('#index-list p');
       if (progressText) {
-        progressText.innerHTML = `<span style="color:#cc0000; font-weight:bold;">Percobaan ${attempt}/${maxRetry} gagal. Mencoba lagi...</span>`;
+        progressText.innerHTML = `<span style="color:#cc0000; font-weight:bold;">Percobaan ${attempt}/${maxRetry} gagal. Jeda sejenak...</span>`;
       }
 
       if (attempt === maxRetry) throw error;
+      
+      // Jeda sebelum percobaan berikutnya
       await new Promise(r => setTimeout(r, 1500 * attempt)); 
     }
   }
