@@ -818,22 +818,25 @@ function populateMapAndIndex() {
       
   mapMarker.bindPopup(record.title, { 
         closeButton: false,
-        maxWidth: 200 
+        maxWidth: 200,
+    togglePopup: false
       });
 
       // =======================================================
       // +++ LOGIKA KLIK KEDUA (KHUSUS MOBILE) +++
       // =======================================================
 mapMarker.on('click', function() {
-        // KUNCI PERBAIKAN: Gunakan lastValidHash, BUKAN window.location.hash.
-        // lastValidHash menyimpan rekam jejak Q-ID 'sebelum' klik ini diproses.
-        if (lastValidHash === qid) {
+        
+        // Jika popup-nya SUDAH TERBUKA di peta, berarti ini klik kedua/ketiga/dst
+        if (this.isPopupOpen()) {
           
-          // Tarik panel mobile ke atas
+          // 1. Panggil panel detail (sekarang dipindah ke sini)
+          displayRecordDetails(qid); 
+          
+          // 2. Tarik panel mobile ke atas
           if (typeof window.setMobilePanelExpanded === 'function') {
             window.setMobilePanelExpanded(true);
           }
-          
         }
       });
       // =======================================================
