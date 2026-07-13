@@ -87,11 +87,11 @@ function loadPrimaryData() {
       
       if (btnImg) {
         btnImg.classList.add('disabled'); 
-        btnImg.textContent = 'Menghitung...'; 
+        btnImg.textContent = 'Memproses...'; 
       }
       if (btnArt) {
         btnArt.classList.add('disabled');
-        btnArt.textContent = 'Menghitung...';
+        btnArt.textContent = 'Memproses...';
       }
 
       // 2. Tarik gambar dan artikel secara diam-diam di latar belakang
