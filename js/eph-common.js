@@ -34,6 +34,7 @@ var currentDisplayedQid = null;
 var lastValidHash   = 'landing';
 var isRevertingHash = false;
 var loadingTimeoutToken = null;
+var revertingHashResetToken = null;
 var searchDebounceToken = null;
 
 const ikonTetesanAir = L.divIcon({
@@ -568,6 +569,10 @@ function processHashChange() {
   // menekan "Batal", abaikan siklus ini agar tidak terjadi infinite loop.
   if (isRevertingHash) {
     isRevertingHash = false;
+    if (revertingHashResetToken) {
+      clearTimeout(revertingHashResetToken);
+      revertingHashResetToken = null;
+    }
     return; 
   }
 
@@ -608,10 +613,15 @@ if (logoBranding) {
         displayPanelContent('landing');
         updateNavigationUI(''); 
       } else {
-        // JIKA BATAL: Kembalikan URL ke posisi sebelumnya secara diam-diam
-        isRevertingHash = true;
-        window.location.hash = lastValidHash === 'landing' ? '' : lastValidHash;
-      }
+  isRevertingHash = true;
+  window.location.hash = lastValidHash === 'landing' ? '' : lastValidHash;
+
+  if (revertingHashResetToken) clearTimeout(revertingHashResetToken);
+  revertingHashResetToken = setTimeout(() => {
+    isRevertingHash = false;
+    revertingHashResetToken = null;
+  }, 300);
+}
     }, 50);
     
     return; // Hentikan eksekusi fungsi di sini! Jangan teruskan ke bawah.
