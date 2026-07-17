@@ -34,7 +34,7 @@ var currentDisplayedQid = null;
 var lastValidHash   = 'landing';
 var isRevertingHash = false;
 var loadingTimeoutToken = null;
-var revertingHashResetToken = null;
+var revertingHashResetToken = null; // === TAMBAHAN: jaring pengaman fallback untuk isRevertingHash ===
 var searchDebounceToken = null;
 
 const ikonTetesanAir = L.divIcon({
@@ -485,15 +485,16 @@ async function fetchWdqsRawWithRetry(query, maxRetry = 3, offsetLabel = '') {
         progressText.innerHTML = `<span style="color:#cc0000; font-weight:bold;">Percobaan ${attempt}/${maxRetry} gagal${offsetLabel}. Melakukan penarikan ulang.</span>`;
       }
 
-if (attempt === maxRetry) {
-  let tiketSaatIni = currentSearchToken;   // simpan: "saat ini tiketnya 1000"
-  await new Promise(r => setTimeout(r, 400));
-  if (currentSearchToken !== tiketSaatIni) throw 'ABORTED';  // "lho, sekarang tiketnya sudah 0, berarti user sudah reset!"
-  throw error;
-}
+      if (attempt === maxRetry) {
+        let tiketSaatIni = currentSearchToken;   // simpan: "saat ini tiketnya 1000"
+        await new Promise(r => setTimeout(r, 400));
+        if (currentSearchToken !== tiketSaatIni) throw 'ABORTED';  // "lho, sekarang tiketnya sudah 0, berarti user sudah reset!"
+        throw error;
+      }
+
       await new Promise(r => setTimeout(r, 1500 * attempt));
+    }
   }
-}
 }
 
 // FUNGSI BARU #3: Loop LIMIT/OFFSET, PAKAI JUMLAH ENTITAS UNIK (?SQ) sebagai penanda halaman terakhir
@@ -569,6 +570,7 @@ function processHashChange() {
   // menekan "Batal", abaikan siklus ini agar tidak terjadi infinite loop.
   if (isRevertingHash) {
     isRevertingHash = false;
+    // === TAMBAHAN: matikan timer fallback karena hashchange normal sudah berhasil terpicu ===
     if (revertingHashResetToken) {
       clearTimeout(revertingHashResetToken);
       revertingHashResetToken = null;
@@ -613,15 +615,17 @@ if (logoBranding) {
         displayPanelContent('landing');
         updateNavigationUI(''); 
       } else {
-  isRevertingHash = true;
-  window.location.hash = lastValidHash === 'landing' ? '' : lastValidHash;
+        // JIKA BATAL: Kembalikan URL ke posisi sebelumnya secara diam-diam
+        isRevertingHash = true;
+        window.location.hash = lastValidHash === 'landing' ? '' : lastValidHash;
 
-  if (revertingHashResetToken) clearTimeout(revertingHashResetToken);
-  revertingHashResetToken = setTimeout(() => {
-    isRevertingHash = false;
-    revertingHashResetToken = null;
-  }, 300);
-}
+        // === TAMBAHAN: jaring pengaman kalau hashchange tidak terpicu (bug Safari) ===
+        if (revertingHashResetToken) clearTimeout(revertingHashResetToken);
+        revertingHashResetToken = setTimeout(() => {
+          isRevertingHash = false;
+          revertingHashResetToken = null;
+        }, 300);
+      }
     }, 50);
     
     return; // Hentikan eksekusi fungsi di sini! Jangan teruskan ke bawah.
